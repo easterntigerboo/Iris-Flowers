@@ -20,15 +20,48 @@ sepal_width = st.number_input("Sepal width", min_value=0.1, max_value=10.0, valu
 petal_length = st.number_input("Petal length", min_value=0.1, max_value=10.0, value=1.4, step=0.1)
 petal_width = st.number_input("Petal width", min_value=0.1, max_value=10.0, value=0.2, step=0.1)
 
+
 if st.button("Predict Iris Species", type="primary"):
-    features = np.array([[sepal_length, sepal_width, petal_length, petal_width]])
+    features = np.array([[
+        sepal_length,
+        sepal_width,
+        petal_length,
+        petal_width
+    ]])
+
     prediction = model.predict(features)[0]
-    st.success(f"Predicted species: **{prediction.capitalize()}**")
+
+    # Convert numerical predictions into flower names
+    iris_names = {
+        0: "Iris Setosa",
+        1: "Iris Versicolor",
+        2: "Iris Virginica"
+    }
+
+    # Display the predicted flower species
+    if isinstance(prediction, (int, np.integer)):
+        flower_name = iris_names[prediction]
+    else:
+        flower_name = str(prediction).capitalize()
+
+    st.success(f"🌸 Predicted Flower: {flower_name}")
+
+    # Display prediction probabilities
     if hasattr(model, "predict_proba"):
         probabilities = model.predict_proba(features)[0]
-        st.subheader("Model confidence estimates")
-        for species, probability in zip(model.classes_, probabilities):
-            st.write(f"{species.capitalize()}: {probability:.1%}")
-            st.progress(float(probability))
+
+        st.subheader("Prediction Probabilities")
+
+        for i, probability in enumerate(probabilities):
+            if hasattr(model, "classes_"):
+                class_label = model.classes_[i]
+                if isinstance(class_label, (int, np.integer)):
+                    species = iris_names[class_label]
+                else:
+                    species = str(class_label).capitalize()
+
+                st.write(f"{species}: {probability:.1%}")
+                st.progress(float(probability))
+
 
 st.caption("Educational demo using a Random Forest classifier trained on the classic Iris dataset.")
